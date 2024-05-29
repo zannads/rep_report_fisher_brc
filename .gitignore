@@ -1,0 +1,13 @@
+report/main.*
+!report/main.tex
+
+__pycache__/
+
+.vscode/
+
+google-research/
+
+nohup.out 
+mjkey.txt
+mujoco*
+*.zip
