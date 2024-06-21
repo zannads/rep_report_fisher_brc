@@ -25,13 +25,17 @@
 \usepackage{amsfonts}       % blackboard math symbols
 \usepackage{nicefrac}       % compact symbols for 1/2, etc.
 \usepackage{microtype}      % microtypography
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{natbib}
+\bibliographystyle{unsrtnat}
 
 \usepackage[dvipsnames]{xcolor}
 \usepackage[normalem]{ulem}
 \newif{\ifhidecomments}
 
 
-\title{Reproducibility report formatting instructions for ML Reproducibility Challenge 2020}
+\title{Reproducibility study of "Offline Reinforcement Learning with Fisher Divergence Critic Regularization"}
 
 % The \author macro works with any number of authors. There are two commands
 % used to separate the names and addresses of multiple authors: \And and \AND.
@@ -41,35 +45,18 @@
 % authors names on the first line, and the last on the second line, try using
 % \AND instead of \And before the third author name.
 
-\author{%
-  David S.~Hippocampus\thanks{Use footnote for providing further information
-    about author (webpage, alternative address)---\emph{not} for acknowledging
-    funding agencies.} \\
-  Department of Computer Science\\
-  Cranberry-Lemon University\\
-  Pittsburgh, PA 15213 \\
-  \texttt{hippo@cs.cranberry-lemon.edu} \\
-  % examples of more authors
-  % \And
-  % Coauthor \\
-  % Affiliation \\
-  % Address \\
-  % \texttt{email} \\
-  % \AND
-  % Coauthor \\
-  % Affiliation \\
-  % Address \\
-  % \texttt{email} \\
-  % \And
-  % Coauthor \\
-  % Affiliation \\
-  % Address \\
-  % \texttt{email} \\
-  % \And
-  % Coauthor \\
-  % Affiliation \\
-  % Address \\
-  % \texttt{email} \\
+\author{
+  Bruno Invernizzi \\
+  Dipartimento di Elettronica, Informazione e Biongengeria \\
+  Politecnico di Milano \\
+  Milano MI, Italy \\
+  \texttt{bruno.invernizzi@polimi.it}\\
+  \And
+  Dennis Zanutto \\
+  Dipartimento di Elettronica, Informazione e Biongengeria \\
+  Politecnico di Milano \\
+  Milano MI, Italy \\
+  \texttt{dennis.zanutto@polimi.it}\\
 }
 
 \begin{document}
@@ -77,9 +64,6 @@
 \maketitle
 
 \section*{\centering Reproducibility Summary}
-
-\textit{Template and style guide to \href{https://paperswithcode.com/rc2020}{ML Reproducibility Challenge 2020}. The following section of Reproducibility Summary is \textbf{mandatory}. This summary \textbf{must fit} in the first page, no exception will be allowed. When submitting your report in OpenReview, copy the entire summary and paste it in the abstract input field, where the sections must be separated with a blank line.
-}
 
 \subsection*{Scope of Reproducibility}
 
@@ -133,27 +117,68 @@ Each experiment in Section~\ref{sec:results} will support (at least) one of thes
 %\jdcomment{To organizers: I asked my students to connect the main claims and the experiments that supported them. For example, in this list above they could have ``Claim 1, which is supported by Experiment 1 in Figure 1.'' The benefit was that this caused the students to think about what their experiments were showing (as opposed to blindly rerunning each experiment and not considering how it fit into the overall story), but honestly it seemed hard for the students to understand what I was asking for.}
 
 \section{Methodology}
-Explain your approach - did you use the author's code, or did you aim to re-implement the approach from the description in the paper? Summarize the resources (code, documentation, GPUs) that you used.
+We heavily relied on the authors' code on GitHub to reproduce the proposed methodology. Minor modifications to the code
+ and the environment were necessary to properly run the experiments, mainly to adapt the project to the new versions of
+ the libraries. We entirely rewrote the toy bandit example for both agents because it was not in the original authors'
+ repository.
+On the other hand, it was not possible to run the experiments with the agents used to compare the proposed methodology 
+because for some repositories, it was not specified, and for others, their code was not up to date, and we could not
+ make it run.
+
+We run all the experiments on a shared private Linux virtual machine with 4 CPUs of Intel(R) Xeon(R) CPU E5-2687W v4 
+@ 3.00GHz (48 cores and 96 threads) and 252 GB of RAM but without GPU. 
+
 
 \subsection{Model descriptions}
-Include a description of each model or algorithm used. Be sure to list the type of model, the number of parameters, and other relevant info (e.g. if it's pretrained). 
+The models developed and used in this reproducibility report are for an offline Reinforcement Learning problem. That is,
+ the trial-and-error experience available for learning a task-solving policy is a static, offline dataset of experience 
+collected by some other behavior policy.
+\subsubsection*{FBRC}
+The Fisher-BRC (behavior-regularised critic) is an offline Reinforcement Learning approach that relies on behavior 
+regularisation, i.e., augmenting an actor-critic algorithm with a penalty measuring divergence of the policy from the 
+offline data. Unlike other approaches, the Fisher-BRC parametrizes the critic as the log behavior policy, which
+ generated the offline data, plus a state-action value offset term, which is learned using a neural network. Behavior 
+ regularisation is performed by adding a penalty term to the critic loss, and the proposed one is a gradient penalty 
+regulariser for the offset term. As this is demonstrated to be equivalent to a Fisher regularisation, the authors named 
+their approach Fisher-BRC. The FBRC implementation is based on the classic Soft Actor-Critic
+ \cite{Haarnoja_Zhou_Abbeel_Levine_2018}.
 
 \subsection{Datasets}
-For each dataset include 1) relevant statistics such as the number of examples and label distributions, 2) details of train / dev / test splits, 3) an explanation of any preprocessing done, and 4) a link to download the data (if available).
+We tested the proposed RL agent on the same environments used by the original authors, i.e., the OpenAI Gym MuJoCo tasks 
+using D4RL datasets \cite{Fu_Kumar_Nachum_Tucker_Levine_2021}. This includes an offline dataset for three different environments (HalfCheetah,
+Hopper and Walker2d) collected from five policies (random, medium, medium-replay, medium-expert, and expert).
+In the original work, the medium-replay policy was named “mixed”, coherently with the name assigned at the time.
+We used both the exact version of the dataset used by the original authors (v0) and the updated version (v2) (which, 
+according to the website, should only offer additional metadata). 
 
 \subsection{Hyperparameters}
-Describe how the hyperparameter values were set. If there was a hyperparameter search done, be sure to include the range of hyperparameters searched over, the method used to search (e.g. manual search, random search, Bayesian optimization, etc.), and the best hyperparameters found. Include the number of total experiments (e.g. hyperparameter trials). You can also include all results from that search (not just the best-found results).
+The hyperparameters were left untouched with respect to the original work as they reproduced similar results straight
+out of the box. The regularization hyperparameter $\lambda$ was set according to the original work based on the specific 
+experiment.
+For the bandit problem, which was reimplemented completely, we used the same hyperparameters found in the source code of 
+the original work, but smaller approximating networks (two 32-neuron layers) and shorter training (1000 epochs) resulted
+ sufficient to solve this simpler problem.
 
 \subsection{Experimental setup and code}
-Include a description of how the experiments were set up that's clear enough a reader could replicate the setup. 
-Include a description of the specific measure used to evaluate the experiments (e.g. accuracy, precision@K, BLEU score, etc.). 
-Provide a link to your code.
+We reproduced the environment with Python 3.8 and the most up-to-date versions of the libraries used by the original
+authors. The use of Python 3.8 and some older versions of the libraries was crucial to running the code provided. Since the
+work publication, we have had to adapt to several changes in the RL libraries. For example, the D4RL datasets 
+are now downloaded from a different URL, the TensorFlow probabilities library is not a module of the main library 
+anymore but a separate one, and the current version of the various libraries requires Mujoco version 2 instead of Mujoco 
+1.50. The up-to-date (June 2024) environment can be seen in the requirements file of our repositories for the reproducibility
+experiments.
+For the bandit problem, we used a simplified environment depending only on TensorFlow and rewritten the agents from 
+scratch. 
+% The implementation is on available on our GitHub repository \cite{Zanutto_Invernizzi_2024}.
+% Re-add this sentence when I fix the problem with the bib file 
 
 \subsection{Computational requirements}
-Include a description of the hardware used, such as the GPU or CPU the experiments were run on. 
-For each model, include a measure of the average runtime (e.g. average time to predict labels for a given validation set with a particular batch size).
-For each experiment, include the total computational requirements (e.g. the total GPU hours spent).
-(Note: you'll likely have to record this as you run your experiments, so it's better to think about it ahead of time). Generally, consider the perspective of a reader who wants to use the approach described in the paper --- list what they would find useful.
+We used a shared private Linux virtual machine with 4 CPUs of Intel(R) Xeon(R) CPU E5-2687W v4 @ 3.00GHz (48 cores and 
+96 threads in total) and 252 GB of RAM but without GPU. The load on the machine varied widely during the experiments and 
+we experienced some delays at times, but we can say that, on average the training time was xx hours for 1 million epochs 
+of the behavioral cloning and yy hours for 1 million epochs of the actor-critic training, for a total of ZZ hours for 
+one seed of each experiment. 
+The bandit example for 1000 epochs takes about a minute.
 
 \section{Results}
 \label{sec:results}
