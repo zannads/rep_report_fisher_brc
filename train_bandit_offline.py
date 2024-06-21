@@ -357,16 +357,16 @@ if __name__ == "__main__":
     """
     # Fit the BRAC critic
     n_epochs=1000
-    #trained__brac=train_simple_brac(actions, rewards, n_epochs)
+    trained__brac=train_simple_brac(actions, rewards, n_epochs)
 
     # Plot the results
     x=np.linspace(-1, 1, 1000)
     plt.figure(figsize=(10, 5))
     plt.subplot(1, 2, 1)
-    # for alpha in [0.01, 0.1, 1.0]:
-       # y=np.array(trained__brac(x)).reshape(-1) # the output of reward_net has shape (1000, 1) while numpy stuff is (1000,)
-       # y=y+alpha*np.log(laplace_pdf(x))
-       # plt.scatter(x, y,label=f'alpha={alpha:.2f}')
+    for alpha in [0.01, 0.1, 1.0]:
+        y=np.array(trained__brac(x)).reshape(-1) # the output of reward_net has shape (1000, 1) while numpy stuff is (1000,)
+        y=y+alpha*np.log(laplace_pdf(x))
+        plt.scatter(x, y,label=f'alpha={alpha:.2f}')
     
     plt.title('BRAC')
     plt.xlabel('Actions')
